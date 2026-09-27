@@ -1,0 +1,25 @@
+---
+description: React frontend feature structure and UX constraints
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend (React)
+
+## Structure
+`src/features/{source-material|course-authoring|course-content|synchronization|student-learning|assessments|notifications}`
+
+Colocate API client, hooks, types, and screens per feature.
+
+## UX for sync (critical)
+- Show impact level (HIGH/MEDIUM/LOW) before regenerate.
+- Selective checkboxes — never force update-all.
+- Diff/compare when `manualModification=true`.
+- Poll `operationId` for long-running jobs; show progress.
+
+## API
+- Typed clients; map `correlationId` into error toasts.
+- Never call LLM from the browser.
+
+## Auth (v1)
+Mock role switcher is OK; still gate routes by role permissions from the PRD.

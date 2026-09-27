@@ -1,0 +1,33 @@
+---
+description: Spring Boot backend conventions for modular monolith
+globs: backend/**/*.java
+alwaysApply: false
+---
+
+# Backend (Spring Boot + Maven)
+
+## Build
+- Use **Maven only** (`backend/mvnw` / `backend/mvnw.cmd`). Do not add Gradle.
+- Run tests: `./mvnw test` from `backend/`.
+
+## Package layout
+`com.learningplatform.{source|course|content|assessment|ai|sync|student|notification|audit|common}`
+
+Each module: `domain`, `repository`, `service`, `api`, `mapper`. No cross-module repository access — call services.
+
+## Domain rules
+- Prefer rich domain services over anemic “God” controllers.
+- Idempotency keys on async consumers (`eventId` / `jobId`).
+- Structured API errors: `{ code, message, correlationId }`.
+
+## AI
+- Business services call `AiProvider` only — never OpenAI SDK directly.
+- Validate LLM JSON with schema before persist.
+- Persist `promptVersion`, `modelName`, `modelVersion` on every generation.
+
+## Persistence
+- Flyway migrations only. No Hibernate auto-ddl in prod profile.
+- UUIDs for public IDs. Soft status enums, not string litter.
+
+## Async
+Long work (parse, embed, generate, sync) → RabbitMQ → worker. REST returns `202` + `operationId`.

@@ -1,0 +1,23 @@
+---
+description: Unit and integration testing standards
+globs: "**/*{Test,Tests,spec}*.{java,ts,tsx}"
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Unit tests (required per feature PRD)
+- Pure domain: change detection, impact rules, lineage lookup, adaptive rules (later), permissions.
+- No real LLM, S3, or Rabbit in unit tests — use fakes/mocks.
+- Name: `methodOrBehavior_condition_expectedResult`.
+
+## Integration
+- Testcontainers for PostgreSQL (and Rabbit when testing consumers).
+- Contract: async job idempotency (double delivery → no duplicate sync events).
+
+## AI
+- Golden fixtures for structured JSON parse/validate.
+- Never assert on live model prose quality in CI unit tests.
+
+## Coverage expectation
+Domain/sync/lineage modules: high coverage. Controllers: thin smoke + validation tests.

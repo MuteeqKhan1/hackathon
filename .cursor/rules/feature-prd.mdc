@@ -1,0 +1,19 @@
+---
+description: How to author or update feature PRDs
+globs: docs/prds/**/*.md
+alwaysApply: false
+---
+
+# Feature PRD Standard
+
+Each feature PRD must include:
+1. Problem, Goals, Non-Goals
+2. Domain rules / state machines
+3. Data (tables/fields)
+4. API surface
+5. Acceptance criteria (checkboxes)
+6. Pointer to UNIT_TEST_CASES section
+
+Do not invent out-of-v1 scope (adaptive, video, SSO, non-PDF) unless Status says Phase 2.
+
+When AC change, update matching UT-* rows in `docs/testing/UNIT_TEST_CASES.md` in the same PR.

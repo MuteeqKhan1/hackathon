@@ -1,0 +1,37 @@
+# Build
+**/target/
+**/node_modules/
+**/dist/
+.tools/
+data/
+*.class
+*.jar
+!**/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Env / secrets
+.env
+.env.local
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Frontend
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Local scratch / large binaries
+backend/QueryOrg.java
+backend/data/
+*.pdf
+!samples/**/*.pdf

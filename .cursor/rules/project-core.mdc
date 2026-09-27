@@ -1,0 +1,30 @@
+---
+description: Core product principles and non-negotiable design constraints
+alwaysApply: true
+---
+
+# AI Adaptive Learning Platform — Core
+
+## Product spine
+Every feature must preserve: Source → Version → Section → Course Asset → Lineage → Sync Impact → Instructor Decision.
+
+## Non-negotiables
+- Instructor is final authority for published content. Never auto-publish AI output.
+- Source versions are immutable. Never overwrite published source or content versions.
+- Every generated asset MUST write `content_source_mapping` at generation time.
+- Org isolation: Org A data must never leak to Org B.
+- No dummy/stub domain logic in mergeable code — use interfaces + fakes only in tests.
+
+## v1 scope lock
+- PDF only. No DOCX/PPTX/HTML parsers.
+- Assets: explanation + quiz only (structure chapters/topics allowed).
+- Auth: simple mock roles (CONTENT_OWNER, INSTRUCTOR, STUDENT).
+- Stack: Spring Boot, React, PostgreSQL, RabbitMQ, S3/MinIO, OpenAI via AiProvider.
+
+## Out of v1
+Adaptive paths, multilingual, PPT/video, SSO, agents, three-way merge UI.
+
+## Before coding a feature
+1. Read the feature PRD under `docs/prds/`.
+2. Implement against acceptance criteria + unit tests in that PRD.
+3. Do not expand scope beyond the PRD.

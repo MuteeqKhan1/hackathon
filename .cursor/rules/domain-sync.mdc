@@ -1,0 +1,25 @@
+---
+description: Source sync and lineage domain invariants
+globs: "**/*{sync,lineage,source,mapping}*"
+alwaysApply: false
+---
+
+# Sync & Lineage Invariants
+
+## Lineage
+- Mapping rows: `content_asset_id` ↔ `source_section_id` (+ section version).
+- Relationship: PRIMARY | SUPPORTING | REFERENCE | CUSTOM.
+- CUSTOM / `syncPolicy=MANUAL` → warn, do not auto-recommend regenerate.
+
+## Change detection
+- Fingerprint = SHA-256 of normalized section text.
+- Same hash ⇒ NO_CHANGE (skip impact).
+- Section identity must be stable across versions (external_reference / stable section key).
+
+## Impact
+- Deterministic configurable rules first (typo/example/definition/formula/removed).
+- Impact records are recommendations — instructor ACCEPT | REJECT | REGENERATE | IGNORE.
+
+## Regeneration
+- Create new `content_asset_version`; keep old until new is published.
+- Never overwrite instructor-edited content silently when `manualModification=true`.

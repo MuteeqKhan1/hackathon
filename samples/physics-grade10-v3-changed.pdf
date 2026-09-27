@@ -1,0 +1,19 @@
+%PDF-1.4
+1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj
+2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj
+3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources<< /Font<< /F1 5 0 R >> >> >>endobj
+4 0 obj<< /Length 346 >>stream
+BT /F1 12 Tf 50 750 Td (Newton Second Law F = 2ma) Tj ET
+BT /F1 12 Tf 50 718 Td (Based on the source material: Newton Second Law. Force equals twice mass times acceleration in this updated edition.) Tj ET
+BT /F1 12 Tf 50 700 Td (Apply the concept with examples from the source. Example: a 2 kg mass with acceleration 3 m/s^2 has F = 12 N.) Tj ET
+
+endstream
+endobj
+5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj
+xref
+0 6
+0000000000 65535 f 
+trailer<< /Size 6 /Root 1 0 R >>
+startxref
+0
+%%EOF

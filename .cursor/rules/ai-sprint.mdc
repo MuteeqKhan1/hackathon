@@ -1,0 +1,26 @@
+---
+description: AI sprint workflow — PRD first, tests second, code third
+alwaysApply: true
+---
+
+# AI Sprint Approach
+
+## Order of work (mandatory)
+1. **PRD** — feature PRD exists and is current (`docs/prds/`).
+2. **Tests** — write failing unit tests from PRD test cases.
+3. **Implement** — domain/service until tests pass.
+4. **Wire** — API/UI last; keep controllers thin.
+5. **Verify** — acceptance criteria checklist in PRD.
+
+## One feature = one PRD
+Do not mix Source Material and Sync Engine in one change set unless the sprint says so.
+
+## Definition of done (feature)
+- [ ] PRD acceptance criteria met
+- [ ] Unit tests from PRD green
+- [ ] Audit events for state-changing ops
+- [ ] No secrets in logs
+- [ ] Async for AI/parse/sync (never block REST for LLM)
+
+## When unsure
+Prefer lineage accuracy and instructor control over “smart” automation.
