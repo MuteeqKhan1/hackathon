@@ -18,6 +18,7 @@ PDF only · Explanation + Quiz · Mock RBAC · Sync vertical slice (§106)
 ## Documentation
 | Doc | Purpose |
 |-----|---------|
+| [**User Guide**](docs/USER_GUIDE.md) | How to create org, author courses, student view, update PDF versions |
 | [Architecture PRD](docs/architecture/ARCHITECTURE_PRD.md) | System design |
 | [Requirements](docs/requirements/REQUIREMENTS.md) | FR/NFR |
 | [Feature PRDs](docs/prds/00-index.md) | One PRD per feature |
