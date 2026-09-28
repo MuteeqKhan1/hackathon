@@ -1,14 +1,19 @@
 :root {
-  --bg: #0f1c17;
-  --bg-elevated: #16261f;
-  --panel: #1c3228;
-  --text: #e8f2ec;
-  --muted: #9bb5a8;
-  --accent: #3d9b6e;
-  --accent-soft: rgba(61, 155, 110, 0.16);
-  --danger: #e07070;
-  --ok: #6bcb8b;
-  --border: rgba(232, 242, 236, 0.12);
+  --bg: #eef1f5;
+  --bg-subtle: #f8f9fb;
+  --bg-elevated: #f3f5f8;
+  --panel: #ffffff;
+  --text: #1e3a5f;
+  --muted: #6b8499;
+  --accent: #4a9fd4;
+  --accent-strong: #2b7cb8;
+  --accent-soft: rgba(74, 159, 212, 0.14);
+  --accent-border: rgba(74, 159, 212, 0.38);
+  --danger: #d64545;
+  --ok: #2b7cb8;
+  --border: rgba(30, 58, 95, 0.1);
+  --shadow-sm: 0 1px 3px rgba(30, 58, 95, 0.06);
+  --shadow-md: 0 4px 14px rgba(30, 58, 95, 0.08);
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
 }
@@ -22,10 +27,7 @@ body {
   min-height: 100vh;
   font-family: var(--font-body);
   color: var(--text);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(61, 155, 110, 0.22), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(90, 140, 180, 0.12), transparent 50%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .app-shell {
@@ -39,8 +41,9 @@ body {
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 28, 23, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
 }
 
 .brand {
@@ -55,16 +58,18 @@ body {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.65rem;
-  background: var(--accent);
-  color: #062015;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #ffffff;
   font-weight: 700;
   letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(43, 124, 184, 0.28);
 }
 
 .brand-name {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.15rem;
+  color: var(--text);
 }
 
 .brand-sub {
@@ -99,8 +104,12 @@ button {
 
 button {
   cursor: pointer;
-  background: var(--accent-soft);
-  border-color: rgba(61, 155, 110, 0.35);
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+button:hover {
+  background: var(--bg-subtle);
 }
 
 .layout {
@@ -115,7 +124,7 @@ button {
   gap: 0.35rem;
   padding: 1.25rem 1rem;
   border-right: 1px solid var(--border);
-  background: rgba(22, 38, 31, 0.7);
+  background: rgba(255, 255, 255, 0.75);
 }
 
 .sidebar a {
@@ -127,16 +136,36 @@ button {
 
 .sidebar a:hover {
   background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .content {
   padding: 1.5rem;
+  background: #ffffff;
+  min-height: calc(100vh - 78px);
+}
+
+.content .nav-item:hover,
+.content .nav-item.active {
+  background: var(--bg-subtle);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.content button:not(.primary-action):not(.linkish) {
+  background: #ffffff;
+  border-color: var(--border);
+}
+
+.content button:not(.primary-action):not(.linkish):hover {
+  background: var(--bg-subtle);
 }
 
 .page h1 {
   margin: 0 0 0.5rem;
   font-family: var(--font-display);
   font-size: 2rem;
+  color: var(--text);
 }
 
 .muted {
@@ -158,15 +187,16 @@ button {
 }
 
 .banner.error {
-  color: #ffd0d0;
-  background: rgba(224, 112, 112, 0.12);
-  border-color: rgba(224, 112, 112, 0.35);
+  color: #9b2c2c;
+  background: rgba(214, 69, 69, 0.08);
+  border-color: rgba(214, 69, 69, 0.28);
 }
 
 .banner.ok {
-  color: #d7ffe4;
-  background: rgba(107, 203, 139, 0.12);
-  border-color: rgba(107, 203, 139, 0.35);
+  color: var(--text);
+  background: #ffffff;
+  border-color: var(--border);
+  border-left: 3px solid var(--accent);
 }
 
 .panel-grid {
@@ -177,17 +207,19 @@ button {
 }
 
 .panel {
-  background: rgba(28, 50, 40, 0.65);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1rem 1.1rem;
   margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .panel h2 {
   margin: 0 0 0.75rem;
   font-family: var(--font-display);
   font-size: 1.15rem;
+  color: var(--text);
 }
 
 .panel label {
@@ -202,10 +234,15 @@ button {
 .panel input {
   font: inherit;
   color: var(--text);
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: 0.45rem;
   padding: 0.45rem 0.65rem;
+}
+
+.panel input:focus {
+  outline: 2px solid rgba(74, 159, 212, 0.35);
+  outline-offset: 1px;
 }
 
 .list {
@@ -220,7 +257,7 @@ button {
 .linkish {
   background: transparent;
   border: none;
-  color: var(--ok);
+  color: var(--accent-strong);
   padding: 0;
   cursor: pointer;
   text-decoration: underline;
@@ -229,7 +266,7 @@ button {
 .tag {
   margin-left: 0.5rem;
   font-size: 0.75rem;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .small {
@@ -297,7 +334,8 @@ button {
 .nav-item:hover,
 .nav-item.active {
   background: var(--accent-soft);
-  border-color: rgba(61, 155, 110, 0.35);
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
 }
 
 .progress-block {
@@ -315,13 +353,13 @@ button {
 .progress-track {
   height: 0.45rem;
   border-radius: 999px;
-  background: rgba(232, 242, 236, 0.1);
+  background: rgba(30, 58, 95, 0.1);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #6bcb8b);
+  background: linear-gradient(90deg, var(--accent), #7ec4ef);
   transition: width 0.35s ease;
 }
 
@@ -382,13 +420,15 @@ button {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.15rem 0.55rem;
+  background: var(--bg-subtle);
 }
 
 .storyboard-stage {
   border-radius: 0.85rem;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: #0c1612;
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
 }
 
 .storyboard-screen {
@@ -398,9 +438,7 @@ button {
   flex-direction: column;
   justify-content: center;
   gap: 1rem;
-  background:
-    radial-gradient(800px 280px at 20% 0%, rgba(61, 155, 110, 0.28), transparent 55%),
-    linear-gradient(160deg, #14241c 0%, #0d1813 55%, #1a2e40 100%);
+  background: #ffffff;
 }
 
 .storyboard-title {
@@ -408,12 +446,13 @@ button {
   font-family: var(--font-display);
   font-size: clamp(1.4rem, 3vw, 2rem);
   line-height: 1.25;
+  color: var(--text);
 }
 
 .storyboard-narration {
   margin: 0;
   max-width: 42rem;
-  color: #c5d8cd;
+  color: #4a6580;
   font-size: 1.05rem;
   line-height: 1.55;
 }
@@ -424,6 +463,8 @@ button {
   padding: 0.55rem 1rem 0.35rem;
   font-size: 0.8rem;
   color: var(--muted);
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border);
 }
 
 .storyboard-track {
@@ -438,7 +479,7 @@ button {
 }
 
 .explanation-card {
-  background: rgba(15, 28, 23, 0.45);
+  background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1rem 1.15rem;
@@ -494,14 +535,15 @@ button {
   padding: 0.65rem 0.8rem;
   border-radius: 0.55rem;
   border: 1px solid var(--border);
-  background: rgba(15, 28, 23, 0.35);
+  background: var(--panel);
   color: var(--text);
   cursor: pointer;
 }
 
 .quiz-option.selected {
-  border-color: rgba(61, 155, 110, 0.55);
-  background: var(--accent-soft);
+  border-color: var(--accent);
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(74, 159, 212, 0.15);
 }
 
 .quiz-option input {
@@ -510,10 +552,15 @@ button {
 
 .primary-action {
   margin-top: 0.25rem;
-  background: var(--accent);
-  color: #062015;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #ffffff;
   border-color: transparent;
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(43, 124, 184, 0.25);
+}
+
+.primary-action:hover {
+  background: linear-gradient(135deg, #5aabde, var(--accent-strong));
 }
 
 @media (max-width: 900px) {
