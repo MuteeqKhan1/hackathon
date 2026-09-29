@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Applies student language + pace preferences to approved lesson JSON so differences are visible.
+ * Applies student language + pace preferences to approved lesson JSON.
+ * Same published concept → different learner experience (EASY scaffold / HARD advanced).
  */
 @Component
 public class LessonPersonalizer {
@@ -32,12 +33,11 @@ public class LessonPersonalizer {
             String title = text(root, "title");
             String body = text(root, "body");
             List<String> points = readStringArray(root.get("keyPoints"));
+            String topic = stripExistingPrefix(title.isBlank() ? "this topic" : title);
 
             title = localizeHeading(title, language);
-            body = applyPaceToBody(body, pace);
-            body = localizeBody(body, language, pace);
-            points = applyPaceToPoints(points, pace);
-            points = points.stream().map(p -> localizeLine(p, language)).toList();
+            body = buildExplanationBody(body, topic, language, pace);
+            points = buildExplanationPoints(points, topic, language, pace);
 
             root.put("title", title);
             root.put("body", body);
@@ -74,12 +74,11 @@ public class LessonPersonalizer {
             for (int i = 0; i < keep; i++) {
                 ObjectNode scene = scenes.get(i).deepCopy();
                 String onScreen = localizeHeading(text(scene, "onScreenText"), language);
-                String narration = localizeBody(text(scene, "narration"), language, pace);
+                String narration = text(scene, "narration");
+                narration = buildVideoNarration(narration, i + 1, keep, language, pace);
                 if (pace == LearningPace.EASY) {
-                    narration = truncate(narration, 140);
                     scene.put("durationSeconds", Math.min(scene.path("durationSeconds").asInt(10), 8));
                 } else if (pace == LearningPace.HARD) {
-                    narration = narration + " " + hardExtra(language);
                     scene.put("durationSeconds", Math.max(scene.path("durationSeconds").asInt(10), 12));
                 }
                 scene.put("onScreenText", onScreen);
@@ -99,50 +98,156 @@ public class LessonPersonalizer {
             String language,
             LearningPace pace
     ) {
-        String title = localizeHeading(quizTitle == null ? "Quiz" : quizTitle, language);
-        if (pace == LearningPace.EASY) {
-            title = prefix(language, "Warm-up", "वार्म-अप", "Calentamiento") + ": " + title;
-        } else if (pace == LearningPace.HARD) {
-            title = prefix(language, "Challenge", "चुनौती", "Desafío") + ": " + title;
-        }
+        String baseTitle = quizTitle == null || quizTitle.isBlank() ? "Quiz" : quizTitle;
+        String title = switch (pace) {
+            case EASY -> prefix(language, "Practice", "अभ्यास", "Práctica") + ": " + localizeHeading(baseTitle, language);
+            case HARD -> prefix(language, "Challenge", "चुनौती", "Desafío") + ": " + localizeHeading(baseTitle, language);
+            default -> localizeHeading(baseTitle, language);
+        };
+
         List<QuizQuestion> out = new ArrayList<>();
         int limit = pace == LearningPace.EASY ? Math.min(1, questions.size()) : questions.size();
         for (int i = 0; i < limit; i++) {
             QuizQuestion q = questions.get(i);
             String prompt = localizeLine(q.prompt(), language);
-            if (pace == LearningPace.HARD) {
-                prompt = prefix(language, "Think carefully", "ध्यान से सोचें", "Piensa con cuidado") + ": " + prompt;
-            }
+            prompt = switch (pace) {
+                case EASY -> prefix(language,
+                        "Practice — take it step by step",
+                        "अभ्यास — चरणबद्ध हल करें",
+                        "Práctica — paso a paso") + ": " + prompt;
+                case HARD -> prefix(language,
+                        "Challenge — apply a deeper concept",
+                        "चुनौती — गहराई से लागू करें",
+                        "Desafío — aplica un concepto más profundo") + ": " + prompt;
+                default -> prompt;
+            };
             List<String> options = q.options().stream().map(o -> localizeLine(o, language)).toList();
             out.add(new QuizQuestion(q.id(), i + 1, prompt, options));
         }
         return new PersonalizedQuiz(title, out);
     }
 
-    private static String applyPaceToBody(String body, LearningPace pace) {
-        if (body == null) {
-            return "";
-        }
+    private static String buildExplanationBody(String body, String topic, String language, LearningPace pace) {
+        String source = body == null ? "" : body.trim();
+        String lang = normalizeLang(language);
         return switch (pace) {
-            case EASY -> truncate(body, 180) + " " + "(Easy pace: short summary.)";
-            case HARD -> body + " Extension: compare this idea with a related example and note edge cases.";
-            default -> body;
+            case EASY -> {
+                String simplified = truncate(source, 160);
+                String step1 = label(lang, "Step 1 — Core idea", "चरण 1 — मुख्य विचार", "Paso 1 — Idea central");
+                String step2 = label(lang, "Step 2 — In simple words", "चरण 2 — सरल भाषा में", "Paso 2 — En palabras simples");
+                String step3 = label(lang, "Step 3 — Try a practice example", "चरण 3 — अभ्यास उदाहरण", "Paso 3 — Ejemplo de práctica");
+                String practice = label(lang,
+                        "Practice example: Restate \"" + topic + "\" using one everyday situation.",
+                        "अभ्यास उदाहरण: \"" + topic + "\" को एक रोज़मर्रा की स्थिति से समझाएँ।",
+                        "Ejemplo de práctica: Explica \"" + topic + "\" con una situación cotidiana.");
+                yield intro(lang, pace)
+                        + step1 + ": " + simplified + " "
+                        + step2 + ": " + label(lang,
+                        "Focus only on the main idea before details.",
+                        "विवरण से पहले केवल मुख्य विचार पर ध्यान दें।",
+                        "Concéntrate solo en la idea principal antes de los detalles.") + " "
+                        + step3 + ": " + practice;
+            }
+            case HARD -> {
+                String deeper = label(lang,
+                        "Deeper concept: Connect \"" + topic + "\" to assumptions, edge cases, and related formulas or definitions from the source.",
+                        "गहराई: \"" + topic + "\" को मान्यताओं, सीमा मामलों और स्रोत की परिभाषाओं से जोड़ें।",
+                        "Concepto más profundo: Relaciona \"" + topic + "\" con supuestos, casos límite y definiciones del material.");
+                String extraExample = label(lang,
+                        "Additional example: Compare a standard case with a non-obvious variant of \"" + topic + "\".",
+                        "अतिरिक्त उदाहरण: \"" + topic + "\" के सामान्य और कम स्पष्ट रूप की तुलना करें।",
+                        "Ejemplo adicional: Compara un caso estándar con una variante no obvia de \"" + topic + "\".");
+                yield intro(lang, pace)
+                        + label(lang, "Advanced explanation", "उन्नत व्याख्या", "Explicación avanzada") + ": "
+                        + source + " "
+                        + deeper + " "
+                        + extraExample;
+            }
+            default -> intro(lang, pace) + source;
         };
     }
 
-    private static List<String> applyPaceToPoints(List<String> points, LearningPace pace) {
-        if (points == null || points.isEmpty()) {
-            return List.of();
-        }
+    private static List<String> buildExplanationPoints(List<String> points, String topic, String language, LearningPace pace) {
+        List<String> base = points == null ? List.of() : points;
+        String lang = normalizeLang(language);
         return switch (pace) {
-            case EASY -> points.stream().limit(2).toList();
+            case EASY -> {
+                List<String> easy = new ArrayList<>();
+                int i = 1;
+                for (String p : base.stream().limit(2).toList()) {
+                    easy.add(label(lang, "Step " + i, "चरण " + i, "Paso " + i) + ": " + localizeLine(p, language));
+                    i++;
+                }
+                if (easy.isEmpty()) {
+                    easy.add(label(lang, "Step 1: Learn the core idea of", "चरण 1: मुख्य विचार सीखें —", "Paso 1: Aprende la idea central de")
+                            + " " + topic);
+                }
+                easy.add(label(lang,
+                        "Practice example: Apply \"" + topic + "\" to a simple everyday case.",
+                        "अभ्यास उदाहरण: \"" + topic + "\" को एक सरल रोज़मर्रा के मामले में लागू करें।",
+                        "Ejemplo de práctica: Aplica \"" + topic + "\" a un caso cotidiano simple."));
+                yield easy;
+            }
             case HARD -> {
-                List<String> hard = new ArrayList<>(points);
-                hard.add("Challenge: explain this topic in your own words using a new example.");
+                List<String> hard = new ArrayList<>();
+                for (String p : base) {
+                    hard.add(localizeLine(p, language));
+                }
+                hard.add(label(lang,
+                        "Additional example: Invent a second scenario that stresses an edge case of \"" + topic + "\".",
+                        "अतिरिक्त उदाहरण: \"" + topic + "\" के सीमा मामले वाला दूसरा परिदृश्य बनाएँ।",
+                        "Ejemplo adicional: Inventa un segundo escenario que tensiona un caso límite de \"" + topic + "\"."));
+                hard.add(label(lang,
+                        "Challenge: Explain a deeper concept linking \"" + topic + "\" to a related idea in your own words.",
+                        "चुनौती: \"" + topic + "\" को एक संबंधित विचार से जोड़कर अपने शब्दों में समझाएँ।",
+                        "Desafío: Explica un concepto más profundo relacionando \"" + topic + "\" con una idea afín."));
                 yield hard;
             }
-            default -> points;
+            default -> base.stream().map(p -> localizeLine(p, language)).toList();
         };
+    }
+
+    private static String buildVideoNarration(String narration, int step, int total, String language, LearningPace pace) {
+        String base = narration == null ? "" : narration.trim();
+        String lang = normalizeLang(language);
+        return switch (pace) {
+            case EASY -> {
+                String stepLabel = label(lang,
+                        "Step " + step + " of " + total,
+                        "चरण " + step + " / " + total,
+                        "Paso " + step + " de " + total);
+                yield stepLabel + ": " + truncate(base, 140) + " "
+                        + label(lang, "Go slowly and check each step.", "धीरे चलें और प्रत्येक चरण जाँचें।", "Ve despacio y revisa cada paso.");
+            }
+            case HARD -> base + " " + hardExtra(language);
+            default -> localizeBody(base, language, pace);
+        };
+    }
+
+    private static String intro(String lang, LearningPace pace) {
+        String paceNote = switch (pace) {
+            case EASY -> switch (lang) {
+                case "hi" -> "आसान गति। ";
+                case "es" -> "Ritmo fácil. ";
+                default -> "Easy pace. ";
+            };
+            case HARD -> switch (lang) {
+                case "hi" -> "कठिन गति। ";
+                case "es" -> "Ritmo difícil. ";
+                default -> "Hard pace. ";
+            };
+            default -> switch (lang) {
+                case "hi" -> "मध्यम गति। ";
+                case "es" -> "Ritmo medio. ";
+                default -> "Medium pace. ";
+            };
+        };
+        String grounded = switch (lang) {
+            case "hi" -> "यह पाठ आपके स्रोत से है। ";
+            case "es" -> "Esta lección proviene de tu material fuente. ";
+            default -> "This lesson is grounded in your source material. ";
+        };
+        return grounded + paceNote;
     }
 
     private static String localizeHeading(String text, String language) {
@@ -156,48 +261,23 @@ public class LessonPersonalizer {
     }
 
     private static String localizeBody(String text, String language, LearningPace pace) {
-        String lang = normalizeLang(language);
-        String base = text == null ? "" : text;
-        String paceNote = switch (pace) {
-            case EASY -> switch (lang) {
-                case "hi" -> " आसान गति।";
-                case "es" -> " Ritmo fácil.";
-                default -> " Easy pace.";
-            };
-            case HARD -> switch (lang) {
-                case "hi" -> " कठिन गति।";
-                case "es" -> " Ritmo difícil.";
-                default -> " Hard pace.";
-            };
-            default -> switch (lang) {
-                case "hi" -> " मध्यम गति।";
-                case "es" -> " Ritmo medio.";
-                default -> " Medium pace.";
-            };
-        };
-        String intro = switch (lang) {
-            case "hi" -> "यह पाठ आपके स्रोत से है। ";
-            case "es" -> "Esta lección proviene de tu material fuente. ";
-            default -> "This lesson is grounded in your source material. ";
-        };
-        return intro + base + paceNote;
+        return intro(normalizeLang(language), pace) + (text == null ? "" : text);
     }
 
     private static String localizeLine(String text, String language) {
         String lang = normalizeLang(language);
         String base = text == null ? "" : text;
         return switch (lang) {
-            case "hi" -> "• " + base;
-            case "es" -> "• " + base;
+            case "hi", "es" -> "• " + base;
             default -> base;
         };
     }
 
     private static String hardExtra(String language) {
         return switch (normalizeLang(language)) {
-            case "hi" -> "अतिरिक्त चुनौती: सूत्र और सीमाओं पर ध्यान दें।";
-            case "es" -> "Reto extra: presta atención a fórmulas y límites.";
-            default -> "Extra challenge: watch formulas and edge cases.";
+            case "hi" -> "अतिरिक्त चुनौती: सूत्र, सीमाएँ और गहरे संबंधों पर ध्यान दें।";
+            case "es" -> "Reto extra: presta atención a fórmulas, límites y conexiones más profundas.";
+            default -> "Extra challenge: watch formulas, edge cases, and deeper connections.";
         };
     }
 
@@ -209,9 +289,17 @@ public class LessonPersonalizer {
         };
     }
 
+    private static String label(String lang, String en, String hi, String es) {
+        return switch (lang) {
+            case "hi" -> hi;
+            case "es" -> es;
+            default -> en;
+        };
+    }
+
     private static String stripExistingPrefix(String text) {
         String t = text.trim();
-        for (String p : List.of("Lesson:", "पाठ:", "Lección:", "Video:", "Quiz:")) {
+        for (String p : List.of("Lesson:", "पाठ:", "Lección:", "Video:", "Quiz:", "Practice:", "Challenge:", "Warm-up:")) {
             if (t.regionMatches(true, 0, p, 0, p.length())) {
                 return t.substring(p.length()).trim();
             }
