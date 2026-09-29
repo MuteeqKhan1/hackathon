@@ -32,10 +32,9 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">ALP</span>
+          <span className="brand-mark">PL</span>
           <div>
-            <p className="brand-name">Adaptive Learning Platform</p>
-            <p className="brand-sub">Source-synced course authoring</p>
+            <p className="brand-name">PulseLearn.AI</p>
           </div>
         </div>
         <div className="auth-controls">
